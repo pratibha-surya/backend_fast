@@ -53,11 +53,11 @@ router.get(
   productController.getProductById
 );
 
-// Create product (Admin only, up to 5 images)
+// Create product (Admin and Subadmin, up to 5 images)
 router.post(
   "/",
   authMiddleware,
-  roleMiddleware("admin"),
+  roleMiddleware("admin", "subadmin"),
   upload.array("images", 5),
   parseProductAttributesMiddleware,
   createProductValidator,
@@ -65,11 +65,11 @@ router.post(
   productController.createProduct
 );
 
-// Update product (Admin only, up to 5 images)
+// Update product (Admin and Subadmin, up to 5 images)
 router.patch(
   "/:id",
   authMiddleware,
-  roleMiddleware("admin"),
+  roleMiddleware("admin", "subadmin"),
   upload.array("images", 5),
   parseProductAttributesMiddleware,
   updateProductValidator,

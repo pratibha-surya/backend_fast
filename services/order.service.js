@@ -3,6 +3,7 @@ import Cart from "../models/Cart.js";
 import Product from "../models/Product.js";
 import Address from "../models/Address.js";
 import Coupon from "../models/Coupon.js";
+import logger from "../utils/logger.js";
 
 
 import ApiError from "../utils/ApiError.js";
@@ -17,6 +18,7 @@ export const createOrder = async (
   userId,
   body
 ) => {
+  logger.info(`Initiating order creation for user: ${userId}`);
 
   const {
     address,
@@ -158,9 +160,12 @@ export const createOrder = async (
 
   });
 
+  logger.info(`Order created successfully. Order Number: ${order.orderNumber}, Grand Total: ${order.grandTotal}`);
+
   // Reduce Stock
 
   for (const item of cart.items) {
+    logger.info(`Updating inventory for product ${item.product._id} (name: ${item.product.name}): reduced quantity by ${item.quantity}`);
 
     await Product.findByIdAndUpdate(
 
@@ -180,6 +185,7 @@ export const createOrder = async (
   // Increase Coupon Usage
 
   if (couponId) {
+    logger.info(`Applied coupon ${couponId} to order ${order.orderNumber}`);
 
     await Coupon.findByIdAndUpdate(
 

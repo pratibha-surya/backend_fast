@@ -81,7 +81,7 @@ export const register = async ({ name, email, password, role }) => {
     });
 
     if (!otpDoc) {
-      throw new ApiError(400, "Email verification is pending or expired");
+      throw new ApiError(400, "Email verification is pending");
     }
 
     await OTP.deleteMany({ email: normalizedEmail, type: "REGISTER" });

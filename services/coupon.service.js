@@ -1,5 +1,6 @@
 import Coupon from "../models/Coupon.js";
 import ApiError from "../utils/ApiError.js";
+import logger from "../utils/logger.js";
 
 /*
 |--------------------------------------------------------------------------
@@ -289,6 +290,7 @@ export const applyCoupon = async (
   code,
   cart
 ) => {
+  logger.info(`Validating coupon application for code: ${code}`);
 
   const coupon =
     await Coupon.findOne({
@@ -302,6 +304,7 @@ export const applyCoupon = async (
     });
 
   if (!coupon) {
+    logger.warn(`Coupon validation failed: code ${code} is invalid or inactive`);
 
     throw new ApiError(
       404,
@@ -313,6 +316,7 @@ export const applyCoupon = async (
   const today = new Date();
 
   if (today < coupon.startDate) {
+    logger.warn(`Coupon validation failed: code ${code} has not started yet`);
 
     throw new ApiError(
       400,
@@ -322,6 +326,7 @@ export const applyCoupon = async (
   }
 
   if (today > coupon.expiryDate) {
+    logger.warn(`Coupon validation failed: code ${code} has expired`);
 
     throw new ApiError(
       400,
@@ -334,6 +339,7 @@ export const applyCoupon = async (
     coupon.usedCount >=
     coupon.usageLimit
   ) {
+    logger.warn(`Coupon validation failed: code ${code} usage limit exceeded`);
 
     throw new ApiError(
       400,
@@ -346,6 +352,7 @@ export const applyCoupon = async (
     cart.subTotal <
     coupon.minimumPurchase
   ) {
+    logger.warn(`Coupon validation failed: subtotal (${cart.subTotal}) is below minimum purchase requirement (${coupon.minimumPurchase})`);
 
     throw new ApiError(
       400,
@@ -383,6 +390,8 @@ export const applyCoupon = async (
       coupon.discountValue;
 
   }
+
+  logger.info(`Coupon ${code} applied successfully. Discount: ${discount}`);
 
   return {
 

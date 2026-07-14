@@ -3,6 +3,7 @@ import Razorpay from "razorpay";
 
 import Order from "../models/Order.js";
 import ApiError from "../utils/ApiError.js";
+import logger from "../utils/logger.js";
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -16,6 +17,7 @@ const razorpay = new Razorpay({
 */
 
 export const createPayment = async (userId, orderId) => {
+  logger.info(`Creating Razorpay payment order for Order ID: ${orderId}, user: ${userId}`);
 
   const order = await Order.findOne({
     _id: orderId,
@@ -35,6 +37,8 @@ export const createPayment = async (userId, orderId) => {
     currency: "INR",
     receipt: order.orderNumber,
   });
+
+  logger.info(`Razorpay payment order created: ${razorpayOrder.id} for receipt: ${order.orderNumber}`);
 
   order.paymentOrderId = razorpayOrder.id;
 
@@ -57,6 +61,8 @@ export const verifyPayment = async (body) => {
     razorpay_signature,
   } = body;
 
+  logger.info(`Verifying Razorpay payment. Order ID: ${razorpay_order_id}, Payment ID: ${razorpay_payment_id}`);
+
   const generatedSignature = crypto
     .createHmac(
       "sha256",
@@ -68,6 +74,7 @@ export const verifyPayment = async (body) => {
     .digest("hex");
 
   if (generatedSignature !== razorpay_signature) {
+    logger.warn(`Payment signature mismatch for Order ID: ${razorpay_order_id}`);
     throw new ApiError(400, "Invalid payment signature");
   }
 
@@ -85,6 +92,8 @@ export const verifyPayment = async (body) => {
   order.orderStatus = "confirmed";
 
   await order.save();
+
+  logger.info(`Payment verified successfully for Order ID: ${razorpay_order_id}. Order status confirmed.`);
 
   return order;
 };
