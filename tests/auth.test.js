@@ -5,7 +5,7 @@ jest.unstable_mockModule("../utils/sendEmail.js", () => ({
   default: jest.fn().mockResolvedValue(true),
 }));
 
-// Dynamically import dependencies so the mock is active during import resolution
+
 const User = (await import("../models/User.js")).default;
 const OTP = (await import("../models/OTP.js")).default;
 const authService = await import("../services/auth.service.js");
