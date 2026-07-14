@@ -5,13 +5,29 @@ import RefreshToken from "../models/RefreshToken.js";
 import ApiError from "../utils/ApiError.js";
 
 import generateOTP from "../utils/generateOTP.js";
-
 import sendEmail from "../utils/sendEmail.js";
+import { addEmailJob } from "../queues/email.queue.js";
+import redisClient from "../config/redis.js";
 
 import {
   generateAccessToken,
   generateRefreshToken,
 } from "../utils/generateToken.js";
+
+// Helper to push to queue if Redis is running, or fall back to sending directly
+const sendEmailAsync = async ({ to, subject, html }) => {
+  try {
+    if (redisClient.isOpen) {
+      await addEmailJob(to, subject, html);
+    } else {
+      await sendEmail({ to, subject, html });
+    }
+  } catch (err) {
+    console.error("Failed to send email (queue/direct):", err);
+    // If queue fail, try direct fallback
+    await sendEmail({ to, subject, html }).catch(e => console.error("Direct email fallback also failed:", e));
+  }
+};
 
 
 // Send Register OTP
@@ -35,7 +51,7 @@ export const sendRegisterOTP = async ({ email }) => {
     { upsert: true, new: true }
   );
 
-  await sendEmail({
+  await sendEmailAsync({
     to: normalizedEmail,
     subject: "Verify Account",
     html: `<h2>Your OTP : ${otp}</h2>`,
@@ -207,7 +223,7 @@ export const forgotPassword = async (email) => {
     expiresAt: new Date(Date.now() + 10 * 60 * 1000),
   });
 
-  await sendEmail({
+  await sendEmailAsync({
     to: normalizedEmail,
     subject: "Reset Password",
     html: `<h2>Your OTP : ${otp}</h2>`,
