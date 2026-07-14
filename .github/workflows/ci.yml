@@ -35,3 +35,8 @@ jobs:
         REDIS_URL: ${{ secrets.REDIS_URL }}
         JWT_ACCESS_SECRET: ${{ secrets.JWT_ACCESS_SECRET }}
         JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+
+    - name: Trigger Render Deploy
+      if: matrix.node-version == '20.x' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+      run: |
+        curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
