@@ -1,10 +1,5 @@
 import { Router } from "express";
 
-
-
-
-
-
 import { changePassword, deleteAccount, getProfile, updateProfile } from "../controllers/user.controller.js";
 import { changePasswordValidator, updateProfileValidator } from "../validators/user.validator.js";
 import authMiddleware from "../middleware/auth.middleware.js";
