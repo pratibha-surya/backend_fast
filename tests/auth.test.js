@@ -1,6 +1,6 @@
 import { jest } from "@jest/globals";
 
-// Mock sendEmail first before any other imports
+
 jest.unstable_mockModule("../utils/sendEmail.js", () => ({
   default: jest.fn().mockResolvedValue(true),
 }));
