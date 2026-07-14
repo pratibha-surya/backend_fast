@@ -1,14 +1,15 @@
 import { jest } from "@jest/globals";
-import User from "../models/User.js";
-import OTP from "../models/OTP.js";
-import * as authService from "../services/auth.service.js";
-import ApiError from "../utils/ApiError.js";
-import sendEmail from "../utils/sendEmail.js";
 
-// Mock sendEmail
+// Mock sendEmail first before any other imports
 jest.unstable_mockModule("../utils/sendEmail.js", () => ({
   default: jest.fn().mockResolvedValue(true),
 }));
+
+// Dynamically import dependencies so the mock is active during import resolution
+const User = (await import("../models/User.js")).default;
+const OTP = (await import("../models/OTP.js")).default;
+const authService = await import("../services/auth.service.js");
+const ApiError = (await import("../utils/ApiError.js")).default;
 
 describe("Auth Service Tests", () => {
   afterEach(() => {
