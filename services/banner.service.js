@@ -1,6 +1,6 @@
 import slugify from "slugify";
 
-import Banner from "../models/banner.js";
+import Banner from "../models/Banner.js";
 
 import ApiError from "../utils/ApiError.js";
 
